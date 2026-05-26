@@ -317,7 +317,9 @@ export default {
 		return Boolean(state.isActive && state.adFreeUntil > Date.now());
 	},
 	canShowAds() {
-		return Boolean(!config.DISABLE_ADS && !config.HAS_PRO && !this.isAdFreeActive());
+		return Boolean(
+			!config.DISABLE_ADS && !config.HAS_PRO && !this.isAdFreeActive(),
+		);
 	},
 	isRewardedSupported() {
 		return Boolean(
