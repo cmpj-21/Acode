@@ -163,7 +163,7 @@ export default function mainSettings() {
 		},
 	];
 
-	if (!config.HAS_PRO) {
+	if (!config.DISABLE_ADS && !config.HAS_PRO) {
 		items.push({
 			key: "adRewards",
 			text: strings["earn ad-free time"],

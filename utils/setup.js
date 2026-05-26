@@ -13,6 +13,7 @@ const path = require("node:path");
 const PLATFORM_FILES = [".DS_Store"];
 const PACKAGE_MANAGERS = new Set(["bun", "npm", "pnpm", "yarn"]);
 const ID_PAID = "com.foxdebug.acode";
+const DISABLE_ADS = true;
 const ADMOB_PLUGIN_DIR = "admob";
 
 function isPaidVersion() {
@@ -80,7 +81,7 @@ execSync("cordova plugin add cordova-plugin-buildinfo", { stdio: "inherit" });
 execSync("cordova plugin add cordova-plugin-device", { stdio: "inherit" });
 execSync("cordova plugin add cordova-plugin-file", { stdio: "inherit" });
 
-const shouldSkipAdmob = isPaidVersion();
+const shouldSkipAdmob = DISABLE_ADS || isPaidVersion();
 const plugins = fs.readdirSync(path.join(__dirname, "../src/plugins"));
 plugins.forEach((plugin) => {
 	if (PLATFORM_FILES.includes(plugin) || plugin.startsWith(".")) return;

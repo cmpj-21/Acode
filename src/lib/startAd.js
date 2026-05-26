@@ -7,7 +7,7 @@ let adUnitIdRewarded = "ca-app-pub-5911839694379275/1633667633"; // Production
 let initialized = false;
 
 export default async function startAd() {
-	if (config.HAS_PRO || !admob) return;
+	if (config.DISABLE_ADS || config.HAS_PRO || typeof admob === "undefined") return;
 
 	if (!initialized) {
 		initialized = true;

@@ -29,6 +29,7 @@ const config = {
 	API_BASE: `${BASE_URL}/api`,
 	SKU_LIST: ["crystal", "bronze", "silver", "gold", "platinum", "titanium"],
 	LOG_FILE_NAME: "Acode.log",
+	DISABLE_ADS: true,
 
 	// Social Links
 	DOCS_URL: "https://docs.acode.app",

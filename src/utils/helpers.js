@@ -288,7 +288,7 @@ export default {
 		editorManager.emit("update", "file-delete");
 	},
 	canShowAds() {
-		return Boolean(!config.HAS_PRO && adRewards.canShowAds());
+		return Boolean(!config.DISABLE_ADS && !config.HAS_PRO && adRewards.canShowAds());
 	},
 	async showInterstitialIfReady() {
 		if (!this.canShowAds()) return false;
