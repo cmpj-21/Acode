@@ -188,7 +188,8 @@ async function getRewardIdentity() {
 
 async function createRewardedAd(offer, step, sessionId) {
 	const rewardedUnitId = getRewardedUnitId();
-	if (!rewardedUnitId || !admob?.RewardedAd) {
+	const RewardedAd = window.admob?.RewardedAd;
+	if (!rewardedUnitId || !RewardedAd) {
 		throw new Error("Rewarded ads are not available in this build.");
 	}
 
@@ -200,7 +201,7 @@ async function createRewardedAd(offer, step, sessionId) {
 		`ads=${offer.adsRequired}`,
 	].join("&");
 
-	return new admob.RewardedAd({
+	return new RewardedAd({
 		adUnitId: rewardedUnitId,
 		serverSideVerification: {
 			userId,
@@ -316,16 +317,23 @@ export default {
 		return Boolean(state.isActive && state.adFreeUntil > Date.now());
 	},
 	canShowAds() {
-		return Boolean(!config.HAS_PRO && !this.isAdFreeActive());
+		return Boolean(
+			!config.DISABLE_ADS && !config.HAS_PRO && !this.isAdFreeActive(),
+		);
 	},
 	isRewardedSupported() {
-		return Boolean(!config.HAS_PRO && admob?.RewardedAd && getRewardedUnitId());
+		return Boolean(
+			!config.DISABLE_ADS &&
+				!config.HAS_PRO &&
+				window.admob?.RewardedAd &&
+				getRewardedUnitId(),
+		);
 	},
 	getRewardedUnavailableReason() {
-		if (config.HAS_PRO) {
+		if (config.DISABLE_ADS || config.HAS_PRO) {
 			return "Ads are already disabled on this build.";
 		}
-		if (!admob?.RewardedAd) {
+		if (!window.admob?.RewardedAd) {
 			return "Rewarded ads are unavailable on this device.";
 		}
 		if (!getRewardedUnitId()) {

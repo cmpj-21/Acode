@@ -5,6 +5,7 @@ const exec = promisify(require("node:child_process").exec);
 
 (async () => {
 	const AD_APP_ID = "ca-app-pub-5911839694379275~4255791238";
+	const DISABLE_ADS = true;
 	const CONFIG_ID = /id="([a-z.]+")/;
 	const HTML_ID = /<title>[a-z.]+<\/title>/;
 	const ID_PAID = "com.foxdebug.acode";
@@ -41,7 +42,7 @@ const exec = promisify(require("node:child_process").exec);
 		let logo, id, currentId;
 
 		currentId = /id="([a-z.]+)"/.exec(config)[1];
-		babelrc = JSON.parse(babelrcText);
+		let babelrc = JSON.parse(babelrcText);
 
 		if (arg === "d") {
 			babelrc.compact = false;
@@ -55,6 +56,31 @@ const exec = promisify(require("node:child_process").exec);
 		} else {
 			logo = logoTextPaid;
 			id = ID_PAID;
+		}
+
+		const shouldInstallAdmob = id === ID_FREE && !DISABLE_ADS;
+
+		async function removeAdmob() {
+			console.log(`|--- Removing Admob ---|`);
+			const { stdout } = await exec("cordova plugin ls");
+			for (const plugin of ["cordova-plugin-consent", "admob-plus-cordova"]) {
+				if (stdout.includes(plugin)) {
+					await exec(`cordova plugin remove ${plugin} --save`);
+				}
+			}
+			console.log("DONE! Removing admob-plus-cordova");
+		}
+
+		async function installAdmob() {
+			console.log(`|--- Installing Admob ---|`);
+			await exec(`cordova plugin add cordova-plugin-consent@2.4.0 --save`);
+
+			if (!fs.existsSync(path.join(__dirname, "../src/plugins/admob/lib"))) {
+				await exec("cd src/plugins/admob && npm install && npm run build");
+			}
+
+			await exec("cordova plugin add src/plugins/admob");
+			console.log("DONE! Installing admob-plus-cordova");
 		}
 
 		fs.writeFileSync(babelrcpath, babelrcText, "utf8");
@@ -79,27 +105,10 @@ const exec = promisify(require("node:child_process").exec);
 							`|--- Preparing platform ${platform.toUpperCase()} ---|`,
 						);
 
-						if (id === ID_FREE) {
-							console.log(`|--- Installing Admob ---|`);
-							await exec(
-								`cordova plugin add cordova-plugin-consent@2.4.0 --save`,
-							);
-
-							if (
-								!fs.existsSync(path.join(__dirname, "src/plugins/admob/lib"))
-							) {
-								await exec(
-									"cd src/plugins/admob && npm install && npm run build",
-								);
-							}
-
-							await exec("cordova plugin add src/plugins/admob");
-							console.log("DONE! Installing admob-plus-cordova");
+						if (shouldInstallAdmob) {
+							await installAdmob();
 						} else {
-							console.log(`|--- Removing Admob ---|`);
-							await exec(`cordova plugin remove cordova-plugin-consent --save`);
-							await exec(`cordova plugin remove admob-plus-cordova --save`);
-							console.log("DONE! Removing admob-plus-cordova");
+							await removeAdmob();
 						}
 
 						console.log(`|--- Reinstalling platform ---|`);
@@ -111,6 +120,8 @@ const exec = promisify(require("node:child_process").exec);
 			}
 
 			await Promise.all(promises);
+		} else if (!shouldInstallAdmob) {
+			await removeAdmob();
 		}
 		process.exit(0);
 	} catch (error) {
